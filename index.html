@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Conversion Token Engine</title>
+
+<style>
+
+body{
+  background:#0a0d14;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+#stage{
+  width:520px;
+  height:520px;
+  margin:30px auto;
+  position:relative;
+}
+
+/* Rings */
+
+.ring{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform-origin:center;
+  transition:filter .3s, opacity .3s;
+}
+
+/* Sizes */
+
+#outer{width:420px;height:420px;}
+#middle{width:320px;height:320px;}
+#inner{width:220px;height:220px;}
+
+
+/* Collapse */
+
+.collapsed{
+  opacity:.35;
+  filter:blur(2px);
+}
+
+
+/* Glow */
+
+.glow{
+  filter:drop-shadow(0 0 25px gold);
+}
+
+
+/* Quadrants */
+
+.quad{
+  position:absolute;
+  width:50%;
+  height:50%;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+}
+
+.q1{top:0;left:0;background:rgba(255,180,0,.25);}
+.q2{top:0;right:0;background:rgba(0,255,200,.25);}
+.q3{bottom:0;right:0;background:rgba(200,0,255,.25);}
+.q4{bottom:0;left:0;background:rgba(0,150,255,.25);}
+
+.active{opacity:1;}
+
+
+/* Controls */
+
+#panel{
+  width:520px;
+  margin:auto;
+  padding:15px;
+  background:#121824;
+  border-radius:10px;
+}
+
+label{
+  display:block;
+  margin:8px;
+}
+
+input{
+  width:250px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<h2>Conversion Token Engine</h2>
+
+
+<div id="stage">
+
+<!-- Quadrants -->
+
+<div class="quad q1"></div>
+<div class="quad q2"></div>
+<div class="quad q3"></div>
+<div class="quad q4"></div>
+
+
+<!-- Real SVG Rings -->
+
+<svg id="outer" class="ring" viewBox="0 0 400 400">
+<circle cx="200" cy="200" r="180"
+ fill="none" stroke="#ff9f1c" stroke-width="28"
+ stroke-dasharray="180 80 120 60 100 70"/>
+</svg>
+
+<svg id="middle" class="ring" viewBox="0 0 300 300">
+<circle cx="150" cy="150" r="130"
+ fill="none" stroke="#2ec4b6" stroke-width="24"
+ stroke-dasharray="150 90 100 60 80 40"/>
+</svg>
+
+<svg id="inner" class="ring" viewBox="0 0 200 200">
+<circle cx="100" cy="100" r="80"
+ fill="none" stroke="#e71d36" stroke-width="20"
+ stroke-dasharray="100 60 70 40 50 30"/>
+</svg>
+
+</div>
+
+
+<!-- Control Panel -->
+
+<div id="panel">
+
+<h3>Decision Controls</h3>
+
+<label>
+ Exploration
+ <input id="explore" type="range" min="0" max="100" value="60">
+</label>
+
+<label>
+ Preference Bias
+ <input id="bias" type="range" min="-50" max="50" value="0">
+</label>
+
+<label>
+ Context Weight
+ <input id="context" type="range" min="0" max="100" value="40">
+</label>
+
+<label>
+ Resolution Sensitivity
+ <input id="sense" type="range" min="1" max="50" value="15">
+</label>
+
+</div>
+
+
+
+
+<script>
+
+/* Elements */
+
+const outer=document.getElementById("outer");
+const middle=document.getElementById("middle");
+const inner=document.getElementById("inner");
+
+const info=document.getElementById("info");
+
+const quads=document.querySelectorAll(".quad");
+
+
+/* Sliders */
+
+const explore=document.getElementById("explore");
+const bias=document.getElementById("bias");
+const context=document.getElementById("context");
+const sense=document.getElementById("sense");
+
+
+/* State */
+
+let A=0,B=0,C=0;
+
+let lock=false;
+let timer=0;
+
+
+/* Products */
+
+const products={
+  1:"Smoked Mackerel Fillet",
+  2:"Smoked Salmon Slices",
+  3:"Smoked Salmon Fillet",
+  4:"Frozen Salmon Fillet"
+};
+
+
+/* Helpers */
+
+function norm(x){
+  return (x+Math.PI*2)%(Math.PI*2);
+}
+
+
+function quadrant(a){
+
+  a=norm(a);
+
+  if(a<Math.PI/2) return 2;
+  if(a<Math.PI) return 1;
+  if(a<3*Math.PI/2) return 4;
+  return 3;
+}
+
+
+/* Main Loop */
+
+function loop(){
+
+  /* Controls → dynamics */
+
+  let e=explore.value/500;
+  let b=bias.value/800;
+  let c=context.value/600;
+
+
+  let tol=sense.value/200;
+
+
+  /* Rotation */
+
+  A+=e + b;
+  B+=-e*1.2 + c;
+  C+=e*1.4 - b;
+
+
+  outer.style.transform=
+   `translate(-50%,-50%) rotate(${A}rad)`;
+
+  middle.style.transform=
+   `translate(-50%,-50%) rotate(${B}rad)`;
+
+  inner.style.transform=
+   `translate(-50%,-50%) rotate(${C}rad)`;
+
+
+  /* Alignment */
+
+  let a=norm(A), b2=norm(B), c2=norm(C);
+
+  let close=
+    Math.abs(a-b2)<tol &&
+    Math.abs(b2-c2)<tol;
+
+
+  /* Collapse phase */
+
+  if(close && !lock){
+
+    outer.classList.add("collapsed");
+    middle.classList.add("collapsed");
+    inner.classList.add("collapsed");
+
+  }else{
+
+    outer.classList.remove("collapsed");
+    middle.classList.remove("collapsed");
+    inner.classList.remove("collapsed");
+  }
+
+
+  /* Resolution */
+
+  if(close && !lock){
+
+    lock=true;
+    timer=70;
+
+    outer.classList.add("glow");
+    middle.classList.add("glow");
+    inner.classList.add("glow");
+
+    let q=quadrant(A);
+
+    quads.forEach(x=>x.classList.remove("active"));
+    quads[q-1].classList.add("active");
+
+    info.innerText="Resolved: "+products[q];
+  }
+
+
+  /* Release */
+
+  if(lock){
+
+    timer--;
+
+    if(timer<=0){
+
+      lock=false;
+
+      outer.classList.remove("glow");
+      middle.classList.remove("glow");
+      inner.classList.remove("glow");
+
+      quads.forEach(x=>x.classList.remove("active"));
+
+    }
+  }
+
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
