@@ -18,6 +18,7 @@ body{
   height:520px;
   margin:30px auto;
   position:relative;
+  z-index:0;
 }
 
 /* Rings */
@@ -28,6 +29,7 @@ body{
   left:50%;
   transform-origin:center;
   transition:filter .3s, opacity .3s;
+  z-index:1;
 }
 
 /* Sizes */
@@ -61,6 +63,7 @@ body{
   opacity:0;
   pointer-events:none;
   transition:.3s;
+  z-index:10;
 }
 
 .q1{top:0;left:0;background:rgba(255,180,0,.25);}
@@ -101,14 +104,6 @@ input{
 
 <div id="stage">
 
-<!-- Quadrants -->
-
-<div class="quad q1"></div>
-<div class="quad q2"></div>
-<div class="quad q3"></div>
-<div class="quad q4"></div>
-
-
 <!-- Real SVG Rings -->
 
 <svg id="outer" class="ring" viewBox="0 0 400 400">
@@ -128,6 +123,13 @@ input{
  fill="none" stroke="#e71d36" stroke-width="20"
  stroke-dasharray="100 60 70 40 50 30"/>
 </svg>
+
+<!-- Quadrants -->
+
+<div class="quad q1"></div>
+<div class="quad q2"></div>
+<div class="quad q3"></div>
+<div class="quad q4"></div>
 
 </div>
 
@@ -162,7 +164,6 @@ input{
 
 
 
-
 <script>
 
 /* Elements */
@@ -172,9 +173,7 @@ const middle=document.getElementById("middle");
 const inner=document.getElementById("inner");
 
 const info=document.getElementById("info");
-
 const quads=document.querySelectorAll(".quad");
-
 
 /* Sliders */
 
@@ -183,14 +182,11 @@ const bias=document.getElementById("bias");
 const context=document.getElementById("context");
 const sense=document.getElementById("sense");
 
-
 /* State */
 
 let A=0,B=0,C=0;
-
 let lock=false;
 let timer=0;
-
 
 /* Products */
 
@@ -201,24 +197,24 @@ const products={
   4:"Frozen Salmon Fillet"
 };
 
-
 /* Helpers */
 
 function norm(x){
-  return (x+Math.PI*2)%(Math.PI*2);
+  return (x%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
 }
 
+function angDist(x,y){
+  let d=Math.abs(x-y);
+  return Math.min(d,Math.PI*2-d);
+}
 
 function quadrant(a){
-
   a=norm(a);
-
   if(a<Math.PI/2) return 2;
   if(a<Math.PI) return 1;
   if(a<3*Math.PI/2) return 4;
   return 3;
 }
-
 
 /* Main Loop */
 
@@ -230,9 +226,7 @@ function loop(){
   let b=bias.value/800;
   let c=context.value/600;
 
-
-  let tol=sense.value/200;
-
+  let tol=sense.value/120;   // widened from /200
 
   /* Rotation */
 
@@ -240,46 +234,33 @@ function loop(){
   B+=-e*1.2 + c;
   C+=e*1.4 - b;
 
-
-  outer.style.transform=
-   `translate(-50%,-50%) rotate(${A}rad)`;
-
-  middle.style.transform=
-   `translate(-50%,-50%) rotate(${B}rad)`;
-
-  inner.style.transform=
-   `translate(-50%,-50%) rotate(${C}rad)`;
-
+  outer.style.transform=`translate(-50%,-50%) rotate(${A}rad)`;
+  middle.style.transform=`translate(-50%,-50%) rotate(${B}rad)`;
+  inner.style.transform=`translate(-50%,-50%) rotate(${C}rad)`;
 
   /* Alignment */
 
   let a=norm(A), b2=norm(B), c2=norm(C);
 
   let close=
-    Math.abs(a-b2)<tol &&
-    Math.abs(b2-c2)<tol;
+    angDist(a,b2)<tol &&
+    angDist(b2,c2)<tol;
 
-
-  /* Collapse phase */
+  /* Collapse */
 
   if(close && !lock){
-
     outer.classList.add("collapsed");
     middle.classList.add("collapsed");
     inner.classList.add("collapsed");
-
   }else{
-
     outer.classList.remove("collapsed");
     middle.classList.remove("collapsed");
     inner.classList.remove("collapsed");
   }
 
-
   /* Resolution */
 
   if(close && !lock){
-
     lock=true;
     timer=70;
 
@@ -295,15 +276,11 @@ function loop(){
     info.innerText="Resolved: "+products[q];
   }
 
-
   /* Release */
 
   if(lock){
-
     timer--;
-
     if(timer<=0){
-
       lock=false;
 
       outer.classList.remove("glow");
@@ -311,10 +288,9 @@ function loop(){
       inner.classList.remove("glow");
 
       quads.forEach(x=>x.classList.remove("active"));
-
+      info.innerText="Exploring…";
     }
   }
-
 
   requestAnimationFrame(loop);
 }
