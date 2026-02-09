@@ -23,4 +23,4 @@ What they are not:
 The files can be opened directly in any modern browser.  
 All logics are contained in respective single HTML documents for transparency and inspectability.
 
-This artifact is published as a **reference implementation** and conceptual normal form.
+These artifacts are published as **reference implementations** and conceptual normal forms.
