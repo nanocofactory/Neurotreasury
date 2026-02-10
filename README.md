@@ -3,7 +3,7 @@
 This repository contains minimal, single-file, browser-runnable prototypes of **conversion tokens**:  
 conceptual, visual and computational model realizations/implementations/instantiations for resolving **choice (coproducts)** into **exchange outcomes (products)** endogenously.
 
-A conversion (reflected n-ary choice) token (#coin) is a hashed (incl. structured) instance of coproduct/choice type (tagged union). It is a structure of cogwheel with multiple concentric rings. Rings encode features/attributes/channels, ring arcs (partitions) encode feature channels/attribute levels/channels loads. At certain polar angles where respective arcs align (e.g. by their radial centers), such intersections resolve (project/reduce) to/compute products/SKUs (purchase decisions) as decision eigenstates of the coproduct.
+A conversion (reflected n-ary choice) token (#coin) is a hashed (incl. structured) instance of coproduct/choice type (tagged union). It is a structure of cogwheel with multiple concentric rings. Rings encode features/attributes/channels, ring arcs (partitions) encode feature channels/attribute levels/channels loads. At certain polar angles where respective arcs align (e.g. by their radial centers), such intersections resolve (project/reduce) to/compute products/SKUs (purchase decisions) as decision eigenstates of the coproduct, marked/symbolized by arising circular/polar quadrants (glowing/highlighted/lit up).
 
 Prototypes demonstrate:
 - decision/exchange as a **computable process**, not a postulated equilibrium,
